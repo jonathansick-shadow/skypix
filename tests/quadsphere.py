@@ -94,7 +94,7 @@ class QuadSpherePixelizationTestCase(unittest.TestCase):
         """Verifies that pixels are contained in their padded selves.
         """
         for R in (4, 5):
-            qs = q.QuadSpherePixelization(R, 1.0)
+            qs = q.QuadSpherePixelization(R, math.radians(1.0))
             for i in xrange(6 * R ** 2):
                 pixel = qs.getGeometry(i, True)
                 paddedPixel = qs.getGeometry(i, False)
@@ -140,5 +140,5 @@ def run(shouldExit=False):
     utilsTests.run(suite(), shouldExit)
 
 if __name__ == '__main__':
-    run()
+    run(True)
 

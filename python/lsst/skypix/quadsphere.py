@@ -32,7 +32,7 @@ class QuadSpherePixelization(object):
       - all pixels with id P' < P have been visited
       - all neighbors of pixels with id P' < P - 8R have been visited
 
-    Each pixel may optionally be expanded by a padding radius A, such that
+    Each pixel may optionally be expanded by a padding angle A, such that
     points on the unit sphere outside of a pixel but within angular separation
     A of the fiducial pixel boundaries are also considered to be part of that
     pixel. Pixel (and padded pixel) edges are great circles on the unit
@@ -48,13 +48,13 @@ class QuadSpherePixelization(object):
     of each cube face onto the sphere, but pixel boundaries could be adjusted
     to produce equal area pixels.
     """
-    def __init__(self, resolution, padding):
+    def __init__(self, resolution, paddingRad):
         """Creates a new quad-sphere sky pixelisation.
 
         resolution: the number of pixels along the x and y axes of each root
                     pixel.
 
-        padding:    the angular separation (deg) by which fiducial sky-pixels
+        paddingRad: the angular separation (rad) by which fiducial sky-pixels
                     are to be padded.
         """
         if not isinstance(resolution, (int, long)):
@@ -63,15 +63,15 @@ class QuadSpherePixelization(object):
         if resolution < 3 or resolution > 16384:
             raise RuntimeError(
                 'Quad-sphere resolution must be in range [3, 16384]')
-        if not isinstance(padding, float):
+        if not isinstance(paddingRad, float):
             raise TypeError(
-                'Quad-sphere pixel padding radius must be a float')
-        if padding < 0.0 or padding >= 45.0:
+                'Quad-sphere pixel padding angle must be a float')
+        if paddingRad < 0.0 or paddingRad >= math.pi * 0.25:
             raise RuntimeError(
                 'Quad-sphere pixel padding radius must be in range [0, 45) deg')
         R = resolution
         self.resolution = R
-        self.padding = padding
+        self.padding = paddingRad
         x, y, z = (1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)
         nx, ny, nz = (-1.0, 0.0, 0.0), (0.0, -1.0, 0.0), (0.0, 0.0, -1.0)
         # center of each root pixel
@@ -87,7 +87,7 @@ class QuadSpherePixelization(object):
         # Compute fiducial and splitting x/y planes for each root pixel
         self.xplane = []
         self.yplane = []
-        sp = math.sin(math.radians(self.padding))
+        sp = math.sin(self.padding)
         for root in xrange(6):
             xplanes = []
             yplanes = []
@@ -370,7 +370,7 @@ class QuadSpherePixelization(object):
                                c[2] + xl * x[2] + yt * y[2])])
         if not fiducial and self.padding > 0.0:
             # Determine angles by which edge planes must be rotated outwards
-            sp = math.sin(math.radians(self.padding))
+            sp = math.sin(self.padding)
             theta = map(lambda x: 0.5 * g.cartesianAngularSep(x[0], x[1]),
                         ((v[0],v[3]), (v[1],v[0]), (v[2],v[1]), (v[3],v[2])))
             sina = map(lambda x: sp / math.cos(math.radians(x)), theta)
@@ -701,23 +701,27 @@ class QuadSpherePixelization(object):
             if p != None:
                 self._intersect(pixels, p, root, (box[0], box[1], ysplit, box[3]))
 
-def imageToPolygon(wcs, naxis1, naxis2, pad=0.0):
+def imageToPolygon(wcs, widthPix, heightPix, padRad=0.0):
     """Computes and returns a spherical convex polygon approximation to the
-    region of the unit sphere covered by an image.
+    region of the unit sphere covered by an image specified with a WCS and
+    a width/height (pixels). The polygon is computed by connecting the 
+    world coordinates of the 4 image corners with great circles, and can
+    optionally be padded by padRad radians.
     """
     # Compute image corners
-    xmin = -0.5 - pad
-    ymin = xmin
-    xmax = naxis1 - 0.5 + pad
-    ymax = naxis2 - 0.5 + pad
+    cd = wcs.getCDMatrix()
+    xpad = math.degrees(padRad) / math.sqrt(cd[0,0]**2 + cd[1,1]**2)
+    ypad = math.degrees(padRad) / math.sqrt(cd[1,0]**2 + cd[0,1]**2)
+    xmin, ymin = -0.5 - xpad, -0.5 - ypad
+    xmax, ymax = widthPix + xpad - 0.5, heightPix + ypad - 0.5
     # Produce a lsst.afw.coord.coordLib.Coord object for each vertex
-    verts = [wcs.pixelToSky(xmin, ymin), wcs.pixelToSky(xmax, ymin),
-             wcs.pixelToSky(xmax, ymax), wcs.pixelToSky(xmin, ymax)]
-    # Map these to cartesian unit vectors
-    verts = map(g.cartesianUnitVector,
-                ((v.getLongitude(coord.DEGREES), v.getLatitude(coord.DEGREES))
-                 for v in verts))
-    # then turn them into a spherical convex polygon
+    coords = [wcs.pixelToSky(xmin, ymin), wcs.pixelToSky(xmax, ymin),
+              wcs.pixelToSky(xmax, ymax), wcs.pixelToSky(xmin, ymax)]
+    # Map these to python tuples containing cartesian unit vectors
+    verts = []
+    for c in coords:
+        verts.append(tuple(c.getVector()))
+    # and turn them into a spherical convex polygon
     convex, cc = g.convex(verts)
     if not convex:
         raise RuntimeError('Image corners do not form a convex polygon: ' + cc)
@@ -725,10 +729,11 @@ def imageToPolygon(wcs, naxis1, naxis2, pad=0.0):
         verts.reverse()
     return g.SphericalConvexPolygon(verts) 
 
-def imageToSkyPixels(pixelization, wcs, naxis1, naxis2, pad=0.0):
-    """Given a sky pixelization, a WCS, a pair of dimensions, and an
-    optional padding amount (in units of pixels), compute the list of ids of
-    sky-pixel intersecting the image.
+def imageToSkyPixels(pixelization, wcs, widthPix, heightPix, padRad=0.0):
+    """Given a sky pixelization, a WCS, a width/height (pixels) and an
+    optional padding angle (radians), compute the list of ids of
+    sky-pixels intersecting the image.
     """
-    return pixelization.intersect(imageToPolygon(wcs, naxis1, naxis2, pad))
+    return pixelization.intersect(
+	imageToPolygon(wcs, widthPix, heightPix, padRad))
 
