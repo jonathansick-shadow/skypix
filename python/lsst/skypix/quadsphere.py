@@ -396,9 +396,6 @@ class QuadSpherePixelization(object):
     def getCenter(self, pixelId):
         """Returns the center of a sky-pixel as a unit cartesian 3-vector.
         """
-        if not isinstance(pixelId, (int, long)):
-            raise TypeError(
-                'Sky-pixel id must be an int or long')
         root, ix, iy = self.coords(pixelId)
         xc = 2.0 * (float(ix) + 0.5) / float(self.resolution) - 1.0
         yc = 2.0 * (float(iy) + 0.5) / float(self.resolution) - 1.0
@@ -687,23 +684,23 @@ class QuadSpherePixelization(object):
                 pixels.append(i)
             return
         if dx >= dy:
-            # Split xrange and recurse
+            # Split x range and recurse
             xsplit = box[0] + dx / 2
             p = poly.clip(self.xplane[root][xsplit][1])
             if p != None:
-                self._overlap(pixels, p, root, (box[0], xsplit, box[2], box[3]))
+                self._intersect(pixels, p, root, (box[0], xsplit, box[2], box[3]))
             p = poly.clip(self.xplane[root][xsplit][2])
             if p != None:
-                self._overlap(pixels, p, root, (xsplit, box[1], box[2], box[3]))
+                self._intersect(pixels, p, root, (xsplit, box[1], box[2], box[3]))
         else:
-            # Split yrange and recurse
+            # Split y range and recurse
             ysplit = box[2] + dy / 2
             p = poly.clip(self.yplane[root][ysplit][1])
             if p != None:
-                self._overlap(pixels, p, root, (box[0], box[1], box[2], ysplit))
+                self._intersect(pixels, p, root, (box[0], box[1], box[2], ysplit))
             p = poly.clip(self.yplane[root][ysplit][2])
             if p != None:
-                self._overlap(pixels, p, root, (box[0], box[1], ysplit, box[3]))
+                self._intersect(pixels, p, root, (box[0], box[1], ysplit, box[3]))
 
 
 def imageToSkyPixels(pixelization, wcs, naxis1, naxis2, pad=0.0):

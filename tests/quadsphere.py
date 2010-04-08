@@ -5,8 +5,9 @@ import sys
 import unittest
 
 import lsst.utils.tests as utilsTests
+import lsst.daf.base as dafBase
 import lsst.afw.image as afwImage
-import lsst.geom.geometry as g
+import lsst.geom.geometry as geom
 import lsst.skypix.quadsphere as q
 
 
@@ -26,7 +27,7 @@ class QuadSpherePixelizationTestCase(unittest.TestCase):
         centers = [qs.getCenter(n) for n in neighbors]
         c = qs.getCenter(i)
         for v in centers:
-            self.assertTrue(g.cartesianAngularSep(c, v) < tolerance)
+            self.assertTrue(geom.cartesianAngularSep(c, v) < tolerance)
 
     def _checkNeighborCommutativity(self, qs, root, x, y):
         i = qs.id(root, x, y)
@@ -100,6 +101,34 @@ class QuadSpherePixelizationTestCase(unittest.TestCase):
                 paddedPixel = qs.getGeometry(i, False)
                 self.assertTrue(paddedPixel.contains(pixel))
 
+    def testImageToSkyPixels(self):
+        """Tests intersection of an image (WCS and dimensions) with a
+        quad-sphere pixelization.
+        """
+        #metadata taken from CFHT data v695856-e0/v695856-e0-c000-a00.sci_img.fits
+        metadata = dafBase.PropertySet()
+        metadata.set("SIMPLE", "T")
+        metadata.set("BITPIX", -32)
+        metadata.set("NAXIS", 2)
+        metadata.set("NAXIS1", 1024)
+        metadata.set("NAXIS2", 1153)
+        metadata.set("RADECSYS", "FK5")
+        metadata.set("EQUINOX", 2000.0)
+        metadata.set("CRVAL1", 215.604025685476)
+        metadata.set("CRVAL2", 53.1595451514076)
+        metadata.set("CRPIX1", 1109.99981456774)
+        metadata.set("CRPIX2", 560.018167811613)
+        metadata.set("CTYPE1", "RA---TAN")
+        metadata.set("CTYPE2", "DEC--TAN")
+        metadata.set("CD1_1", 5.10808596133527E-05)
+        metadata.set("CD1_2", 1.85579539217196E-07)
+        metadata.set("CD2_2", -5.10281493481982E-05)
+        metadata.set("CD2_1", -8.27440751733828E-07)
+        wcs = afwImage.makeWcs(metadata)
+        qs = q.QuadSpherePixelization(360, 1.0)
+        print q.imageToSkyPixels(qs, wcs, 1024, 1153)
+
+
 def suite():
     utilsTests.init()
     return unittest.TestSuite(unittest.makeSuite(QuadSpherePixelizationTestCase))
@@ -109,3 +138,4 @@ def run(shouldExit=False):
 
 if __name__ == '__main__':
     run()
+
