@@ -1,0 +1,7 @@
+setupRequired(utils >= 3.4.4)
+setupRequired(geom >= 1.0)
+setupRequired(afw >= 3.2.23)
+
+setupOptional(doxygen >= 1.5.9)
+
+envPrepend(PYTHONPATH, ${PRODUCT_DIR}/python)

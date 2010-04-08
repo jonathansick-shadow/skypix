@@ -1,0 +1,10 @@
+# -*- python -*-
+Import("env")
+
+#
+# Tests
+#
+if not env.CleanFlagIsSet():
+    import lsst.tests
+    tests = lsst.tests.Control(env, verbose = True)
+    tests.run("*.py")
