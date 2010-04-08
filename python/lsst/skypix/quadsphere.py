@@ -1,5 +1,4 @@
 import math
-import pdb
 
 import lsst.afw.coord.coordLib as coord
 import lsst.geom.geometry as g
@@ -702,11 +701,9 @@ class QuadSpherePixelization(object):
             if p != None:
                 self._intersect(pixels, p, root, (box[0], box[1], ysplit, box[3]))
 
-
-def imageToSkyPixels(pixelization, wcs, naxis1, naxis2, pad=0.0):
-    """Given a sky pixelization, a WCS, a pair of dimensions, and an
-    optional padding amount (in units of pixels), compute the list of ids of
-    sky-pixel intersecting the image.
+def imageToPolygon(wcs, naxis1, naxis2, pad=0.0):
+    """Computes and returns a spherical convex polygon approximation to the
+    region of the unit sphere covered by an image.
     """
     # Compute image corners
     xmin = -0.5 - pad
@@ -715,7 +712,7 @@ def imageToSkyPixels(pixelization, wcs, naxis1, naxis2, pad=0.0):
     ymax = naxis2 - 0.5 + pad
     # Produce a lsst.afw.coord.coordLib.Coord object for each vertex
     verts = [wcs.pixelToSky(xmin, ymin), wcs.pixelToSky(xmax, ymin),
-             wcs.pixelToSky(xmin, ymax), wcs.pixelToSky(xmax, ymax)]
+             wcs.pixelToSky(xmax, ymax), wcs.pixelToSky(xmin, ymax)]
     # Map these to cartesian unit vectors
     verts = map(g.cartesianUnitVector,
                 ((v.getLongitude(coord.DEGREES), v.getLatitude(coord.DEGREES))
@@ -726,5 +723,12 @@ def imageToSkyPixels(pixelization, wcs, naxis1, naxis2, pad=0.0):
         raise RuntimeError('Image corners do not form a convex polygon: ' + cc)
     elif not cc:
         verts.reverse()
-    return pixelization.intersect(g.SphericalConvexPolygon(verts))
+    return g.SphericalConvexPolygon(verts) 
+
+def imageToSkyPixels(pixelization, wcs, naxis1, naxis2, pad=0.0):
+    """Given a sky pixelization, a WCS, a pair of dimensions, and an
+    optional padding amount (in units of pixels), compute the list of ids of
+    sky-pixel intersecting the image.
+    """
+    return pixelization.intersect(imageToPolygon(wcs, naxis1, naxis2, pad))
 

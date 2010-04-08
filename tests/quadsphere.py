@@ -1,7 +1,6 @@
 from itertools import izip
 import math
 import pdb
-import sys
 import unittest
 
 import lsst.utils.tests as utilsTests
@@ -125,8 +124,12 @@ class QuadSpherePixelizationTestCase(unittest.TestCase):
         metadata.set("CD2_2", -5.10281493481982E-05)
         metadata.set("CD2_1", -8.27440751733828E-07)
         wcs = afwImage.makeWcs(metadata)
-        qs = q.QuadSpherePixelization(360, 1.0)
-        print q.imageToSkyPixels(qs, wcs, 1024, 1153)
+        qs = q.QuadSpherePixelization(360, 0.0)
+        poly = q.imageToPolygon(wcs, 1024, 1153)
+        pixels = q.imageToSkyPixels(qs, wcs, 1024, 1153)
+        self.assertEqual(len(pixels), 1)
+        self.assertEqual(pixels[0], 730044)
+        self.assertTrue(qs.getGeometry(730044).contains(poly))
 
 
 def suite():
