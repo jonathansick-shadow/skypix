@@ -1,7 +1,7 @@
 import math
 
-import lsst.afw.coord.coordLib as coord
-import lsst.geom.geometry as g
+import lsst.pex.policy as pexPolicy
+import lsst.geom as geom
 
 
 # Methods for rotating vectors around the x, y, z and -x, -y, -z axes
@@ -96,14 +96,14 @@ class QuadSpherePixelization(object):
                 xfp = self._fiducialXPlane(root, i)
                 yfp = self._fiducialYPlane(root, i)
                 f = 2.0 * float(i) / float(R) - 1.0
-                thetaX = math.radians(0.5 * g.cartesianAngularSep(
+                thetaX = math.radians(0.5 * geom.cartesianAngularSep(
                     (c[0] + f * x[0] + y[0],
                      c[1] + f * x[1] + y[1],
                      c[2] + f * x[2] + y[2]),
                     (c[0] + f * x[0] - y[0],
                      c[1] + f * x[1] - y[1],
                      c[2] + f * x[2] - y[2])))
-                thetaY = math.radians(0.5 * g.cartesianAngularSep(
+                thetaY = math.radians(0.5 * geom.cartesianAngularSep(
                     (c[0] + x[0] + f * y[0],
                      c[1] + x[1] + f * y[1],
                      c[2] + x[2] + f * y[2]),
@@ -356,22 +356,22 @@ class QuadSpherePixelization(object):
         yb = 2.0 * float(iy) / float(self.resolution) - 1.0
         yt = 2.0 * float(iy + 1) / float(self.resolution) - 1.0
         c, x, y = self.center[root], self.x[root], self.y[root]
-        v = map(g.normalize, [(c[0] + xl * x[0] + yb * y[0],
-                               c[1] + xl * x[1] + yb * y[1],
-                               c[2] + xl * x[2] + yb * y[2]),
-                              (c[0] + xr * x[0] + yb * y[0],
-                               c[1] + xr * x[1] + yb * y[1],
-                               c[2] + xr * x[2] + yb * y[2]),
-                              (c[0] + xr * x[0] + yt * y[0],
-                               c[1] + xr * x[1] + yt * y[1],
-                               c[2] + xr * x[2] + yt * y[2]),
-                              (c[0] + xl * x[0] + yt * y[0],
-                               c[1] + xl * x[1] + yt * y[1],
-                               c[2] + xl * x[2] + yt * y[2])])
+        v = map(geom.normalize, [(c[0] + xl * x[0] + yb * y[0],
+                                  c[1] + xl * x[1] + yb * y[1],
+                                  c[2] + xl * x[2] + yb * y[2]),
+                                 (c[0] + xr * x[0] + yb * y[0],
+                                  c[1] + xr * x[1] + yb * y[1],
+                                  c[2] + xr * x[2] + yb * y[2]),
+                                 (c[0] + xr * x[0] + yt * y[0],
+                                  c[1] + xr * x[1] + yt * y[1],
+                                  c[2] + xr * x[2] + yt * y[2]),
+                                 (c[0] + xl * x[0] + yt * y[0],
+                                  c[1] + xl * x[1] + yt * y[1],
+                                  c[2] + xl * x[2] + yt * y[2])])
         if not fiducial and self.padding > 0.0:
             # Determine angles by which edge planes must be rotated outwards
             sp = math.sin(self.padding)
-            theta = map(lambda x: 0.5 * g.cartesianAngularSep(x[0], x[1]),
+            theta = map(lambda x: 0.5 * geom.cartesianAngularSep(x[0], x[1]),
                         ((v[0],v[3]), (v[1],v[0]), (v[2],v[1]), (v[3],v[2])))
             sina = map(lambda x: sp / math.cos(math.radians(x)), theta)
             cosa = map(lambda x: math.sqrt(1.0 - x * x), sina)
@@ -386,11 +386,11 @@ class QuadSpherePixelization(object):
             xrp = self.xrot[root](xrp, sina[2], cosa[2])
             ytp = self.yrot[root](ytp, sina[3], cosa[3])
             # intersect rotated planes to find vertices of padded sky-pixel
-            v = map(g.normalize, [g.cross(xlp, ybp),
-                                  g.cross(xrp, ybp),
-                                  g.cross(xrp, ytp),
-                                  g.cross(xlp, ytp)])
-        return g.SphericalConvexPolygon(v)
+            v = map(geom.normalize, [geom.cross(xlp, ybp),
+                                     geom.cross(xrp, ybp),
+                                     geom.cross(xrp, ytp),
+                                     geom.cross(xlp, ytp)])
+        return geom.SphericalConvexPolygon(v)
 
     def getCenter(self, pixelId):
         """Returns the center of a sky-pixel as a unit cartesian 3-vector.
@@ -399,9 +399,9 @@ class QuadSpherePixelization(object):
         xc = 2.0 * (float(ix) + 0.5) / float(self.resolution) - 1.0
         yc = 2.0 * (float(iy) + 0.5) / float(self.resolution) - 1.0
         c, x, y = self.center[root], self.x[root], self.y[root]
-        return g.normalize((c[0] + xc * x[0] + yc * y[0],
-                            c[1] + xc * x[1] + yc * y[1],
-                            c[2] + xc * x[2] + yc * y[2]))
+        return geom.normalize((c[0] + xc * x[0] + yc * y[0],
+                               c[1] + xc * x[1] + yc * y[1],
+                               c[2] + xc * x[2] + yc * y[2]))
 
     def getNeighbors(self, pixelId):
         """Returns a list of ids for sky-pixels adjacent to specified pixel.
@@ -534,7 +534,7 @@ class QuadSpherePixelization(object):
         """Returns a list of ids for sky-pixels intersecting the given
         polygon. Intersection is computed against padded sky-pixels.
         """
-        if not isinstance(polygon, g.SphericalConvexPolygon):
+        if not isinstance(polygon, geom.SphericalConvexPolygon):
             raise TypeError('Expecting a SphericalConvexPolygon as input ' +
                             'to the sky-pixel intersection computation')
         pixels = []
@@ -665,14 +665,14 @@ class QuadSpherePixelization(object):
         x = 2.0 * float(ix) / float(self.resolution) - 1.0
         c, b = self.center[root], self.x[root]
         v = (c[0] + x * b[0], c[1] + x * b[1], c[2] + x * b[2])
-        return g.normalize(self.xrot[root](v, 1.0, 0.0))
+        return geom.normalize(self.xrot[root](v, 1.0, 0.0))
 
     def _fiducialYPlane(self, root, iy):
         assert isinstance(iy, (int,long)) and iy >= 0 and iy <= self.resolution
         y = 2.0 * float(iy) / float(self.resolution) - 1.0
         c, b = self.center[root], self.y[root]
         v = (c[0] + y * b[0], c[1] + y * b[1], c[2] + y * b[2])
-        return g.normalize(self.yrot[root](v, 1.0, 0.0))
+        return geom.normalize(self.yrot[root](v, 1.0, 0.0))
 
     def _intersect(self, pixels, poly, root, box):
         dx = box[1] - box[0]
@@ -701,6 +701,20 @@ class QuadSpherePixelization(object):
             if p != None:
                 self._intersect(pixels, p, root, (box[0], box[1], ysplit, box[3]))
 
+
+def createQuadSpherePixelization(policy=None):
+    policyFile = pexPolicy.DefaultPolicyFile(
+        "skypix", "QuadSpherePixelizationDictionary.paf", "policy")
+    defaults = pexPolicy.Policy.createPolicy(
+        policyFile, policyFile.getRepositoryPath())
+    if policy is None:
+        policy = pexPolicy.Policy()
+    policy.mergeDefaults(defaults)
+    # Obtain resolution and padding from policy
+    resolution = policy.get('resolutionPix')
+    padding = math.radians(policy.get('paddingArcsec') / 3600.0)
+    return QuadSpherePixelization(resolution, padding)
+
 def imageToPolygon(wcs, widthPix, heightPix, padRad=0.0):
     """Computes and returns a spherical convex polygon approximation to the
     region of the unit sphere covered by an image specified with a WCS and
@@ -722,18 +736,10 @@ def imageToPolygon(wcs, widthPix, heightPix, padRad=0.0):
     for c in coords:
         verts.append(tuple(c.getVector()))
     # and turn them into a spherical convex polygon
-    convex, cc = g.convex(verts)
+    convex, cc = geom.convex(verts)
     if not convex:
         raise RuntimeError('Image corners do not form a convex polygon: ' + cc)
     elif not cc:
         verts.reverse()
-    return g.SphericalConvexPolygon(verts) 
-
-def imageToSkyPixels(pixelization, wcs, widthPix, heightPix, padRad=0.0):
-    """Given a sky pixelization, a WCS, a width/height (pixels) and an
-    optional padding angle (radians), compute the list of ids of
-    sky-pixels intersecting the image.
-    """
-    return pixelization.intersect(
-	imageToPolygon(wcs, widthPix, heightPix, padRad))
+    return geom.SphericalConvexPolygon(verts)
 

@@ -6,8 +6,8 @@ import unittest
 import lsst.utils.tests as utilsTests
 import lsst.daf.base as dafBase
 import lsst.afw.image as afwImage
-import lsst.geom.geometry as geom
-import lsst.skypix.quadsphere as q
+import lsst.geom as geom
+import lsst.skypix as skypix
 
 
 class QuadSpherePixelizationTestCase(unittest.TestCase):
@@ -15,7 +15,7 @@ class QuadSpherePixelizationTestCase(unittest.TestCase):
     """
     def testIdAndCoord(self):
         for R in (3,4,16,17):
-            qs = q.QuadSpherePixelization(R, 0.0)
+            qs = skypix.QuadSpherePixelization(R, 0.0)
             for i in xrange(6 * R * R):
                 root, x, y = qs.coords(i)
                 self.assertEqual(qs.id(root, x, y), i)
@@ -39,7 +39,7 @@ class QuadSpherePixelizationTestCase(unittest.TestCase):
         """
         tolerance = 1.0
         for R in (180, 181):
-            qs = q.QuadSpherePixelization(R, 0.0)
+            qs = skypix.QuadSpherePixelization(R, 0.0)
             for root in xrange(6):
                 # test root pixel edges and corners
                 for i in xrange(R - 1):
@@ -55,7 +55,7 @@ class QuadSpherePixelizationTestCase(unittest.TestCase):
         then P2 is a neighbor of P1.
         """
         for R in (16, 17):
-            qs = q.QuadSpherePixelization(R, 0.0)
+            qs = skypix.QuadSpherePixelization(R, 0.0)
             for root in xrange(6):
                 # test root pixel edges and corners
                 for i in xrange(R - 1):
@@ -70,7 +70,7 @@ class QuadSpherePixelizationTestCase(unittest.TestCase):
         """Tests that pixels are ordered in an approximate spiral.
         """
         for R in (17, 32):
-            qs = q.QuadSpherePixelization(R, 0.0)
+            qs = skypix.QuadSpherePixelization(R, 0.0)
             lag = 8 * R
             for i in xrange(6 * R * R):
                 neighbors = qs.getNeighbors(i)
@@ -82,9 +82,9 @@ class QuadSpherePixelizationTestCase(unittest.TestCase):
     def testIntersect(self):
         """Tests polygon sky-pixel intersection.
         """
-        qs1 = q.QuadSpherePixelization(3, 0.0)
+        qs1 = skypix.QuadSpherePixelization(3, 0.0)
         polygons = [qs1.getGeometry(qs1.id(r, 1, 1), True) for r in xrange(6)]
-        qs2 = q.QuadSpherePixelization(4, 0.0)
+        qs2 = skypix.QuadSpherePixelization(4, 0.0)
         results = [set([qs2.id(r, 1, 1), qs2.id(r, 2, 1),
                         qs2.id(r, 1, 2), qs2.id(r, 2, 2)]) for r in xrange(6)]
         for poly, res in izip(polygons, results):
@@ -94,13 +94,13 @@ class QuadSpherePixelizationTestCase(unittest.TestCase):
         """Verifies that pixels are contained in their padded selves.
         """
         for R in (4, 5):
-            qs = q.QuadSpherePixelization(R, math.radians(1.0))
+            qs = skypix.QuadSpherePixelization(R, math.radians(1.0))
             for i in xrange(6 * R ** 2):
                 pixel = qs.getGeometry(i, True)
                 paddedPixel = qs.getGeometry(i, False)
                 self.assertTrue(paddedPixel.contains(pixel))
 
-    def testImageToSkyPixels(self):
+    def testImageToPixels(self):
         """Tests intersection of an image (WCS and dimensions) with a
         quad-sphere pixelization.
         """
@@ -124,9 +124,9 @@ class QuadSpherePixelizationTestCase(unittest.TestCase):
         metadata.set("CD2_2", -5.10281493481982E-05)
         metadata.set("CD2_1", -8.27440751733828E-07)
         wcs = afwImage.makeWcs(metadata)
-        qs = q.QuadSpherePixelization(360, 0.0)
-        poly = q.imageToPolygon(wcs, 1024, 1153)
-        pixels = q.imageToSkyPixels(qs, wcs, 1024, 1153)
+        qs = skypix.createQuadSpherePixelization()
+        poly = skypix.imageToPolygon(wcs, 1024, 1153)
+        pixels = qs.intersect(poly)
         self.assertEqual(len(pixels), 1)
         self.assertEqual(pixels[0], 730044)
         self.assertTrue(qs.getGeometry(730044).contains(poly))

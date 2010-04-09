@@ -1,4 +1,5 @@
 setupRequired(utils >= 3.4.4)
+setupRequired(pex_policy >= 3.4.2)
 setupRequired(geom)
 setupRequired(afw)
 
