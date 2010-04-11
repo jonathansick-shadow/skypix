@@ -568,6 +568,34 @@ class QuadSpherePixelization(object):
         return ''.join([self.__class__.__name__, '(',
                         repr(self.resolution), ', ', repr(self.padding), ')'])
 
+    def pixel(self, theta, phi):
+        """Maps from spherical coordinates (longitude and latitude
+        angles theta and phi, both in radians) to a sky-pixel id.
+        """
+        R = self.resolution
+        root = int(math.fmod(0.5 + 2.0 * theta / math.pi, 4.0))
+        theta1 = theta - 0.5 * math.pi * root
+        root += 1
+        tanPhi = math.tan(phi)
+        y = tanPhi / math.cos(theta1)
+        if y > 1:
+            root = 0 
+            x = -math.sin(theta) / tanPhi
+            y = math.cos(theta) / tanPhi
+        elif y < -1:
+            root = 5
+            x = math.sin(theta) / tanPhi
+            y = math.cos(theta) / tanPhi
+        else:
+            x = math.tan(theta1)
+        x = int(R * 0.5 * (x + 1.0))
+        y = int(R * 0.5 * (y + 1.0))
+        if x >= R:
+            x = R - 1
+        if y >= R:
+            y = R - 1
+        return self.id(root, x, y)
+
     def id(self, root, x, y):
         """Maps from a root pixel number and x, y pixel coordinates
         to a sky-pixel id.

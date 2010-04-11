@@ -100,6 +100,16 @@ class QuadSpherePixelizationTestCase(unittest.TestCase):
                 paddedPixel = qs.getGeometry(i, False)
                 self.assertTrue(paddedPixel.contains(pixel))
 
+    def testPixel(self):
+        """Verifies that the center of pixel P is mapped back to P.
+        """
+        for R in (64, 65):
+            qs = skypix.QuadSpherePixelization(R, 0.0)
+            for i in xrange(6 * R ** 2):
+                c = geom.sphericalCoords(qs.getCenter(i))
+                pixelId = qs.pixel(math.radians(c[0]), math.radians(c[1]))
+                self.assertEqual(i, pixelId)
+
     def testImageToPixels(self):
         """Tests intersection of an image (WCS and dimensions) with a
         quad-sphere pixelization.
