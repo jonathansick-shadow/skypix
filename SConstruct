@@ -28,7 +28,7 @@ for d in (".", "doc", "tests"):
 env['IgnoreFiles'] = r"(~$|\.pyc$|^\.svn$|\.o$)"
 
 Alias("install", [
-    env.Install(env['prefix'], "doc"),
+    env.Install(env['prefix'], "policy"),
     env.Install(env['prefix'], "python"),
     env.Install(env['prefix'], "tests"),
     env.InstallEups(os.path.join(env['prefix'], "ups")),
