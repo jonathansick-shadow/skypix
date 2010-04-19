@@ -562,7 +562,7 @@ class QuadSpherePixelization(object):
         """Returns an iterator over the sky-pixel ids of all the pixels
         in this pixelization.
         """
-        return xrange(len(self))
+        return iter(xrange(len(self)))
 
     def __repr__(self):
         return ''.join([self.__class__.__name__, '(',

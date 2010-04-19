@@ -16,7 +16,8 @@ class QuadSpherePixelizationTestCase(unittest.TestCase):
     def testIdAndCoord(self):
         for R in (3,4,16,17):
             qs = skypix.QuadSpherePixelization(R, 0.0)
-            for i in xrange(6 * R * R):
+            self.assertEqual(len(qs), 6 * R**2)
+            for i in xrange(6 * R**2):
                 root, x, y = qs.coords(i)
                 self.assertEqual(qs.id(root, x, y), i)
 
@@ -72,7 +73,7 @@ class QuadSpherePixelizationTestCase(unittest.TestCase):
         for R in (17, 32):
             qs = skypix.QuadSpherePixelization(R, 0.0)
             lag = 8 * R
-            for i in xrange(6 * R * R):
+            for i in qs:
                 neighbors = qs.getNeighbors(i)
                 maxN = max(neighbors)
                 minN = min(neighbors)
@@ -105,7 +106,7 @@ class QuadSpherePixelizationTestCase(unittest.TestCase):
         """
         for R in (64, 65):
             qs = skypix.QuadSpherePixelization(R, 0.0)
-            for i in xrange(6 * R ** 2):
+            for i in qs:
                 c = geom.sphericalCoords(qs.getCenter(i))
                 pixelId = qs.pixel(math.radians(c[0]), math.radians(c[1]))
                 self.assertEqual(i, pixelId)
