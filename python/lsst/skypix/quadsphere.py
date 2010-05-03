@@ -752,8 +752,8 @@ def imageToPolygon(wcs, widthPix, heightPix, padRad=0.0):
     """
     # Compute image corners
     cd = wcs.getCDMatrix()
-    xpad = math.degrees(padRad) / math.sqrt(cd[0,0]**2 + cd[1,1]**2)
-    ypad = math.degrees(padRad) / math.sqrt(cd[1,0]**2 + cd[0,1]**2)
+    xpad = math.degrees(padRad) / math.sqrt(cd[0,0]**2 + cd[0,1]**2)
+    ypad = math.degrees(padRad) / math.sqrt(cd[1,0]**2 + cd[1,1]**2)
     xmin, ymin = -0.5 - xpad, -0.5 - ypad
     xmax, ymax = widthPix + xpad - 0.5, heightPix + ypad - 0.5
     # Produce a lsst.afw.coord.coordLib.Coord object for each vertex
