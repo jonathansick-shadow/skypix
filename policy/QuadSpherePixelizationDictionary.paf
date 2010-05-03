@@ -10,7 +10,7 @@ definitions: {
                       R**2 pixels, yielding a total of 6*R**2 pixels over the
                       unit sphere"
         maxOccurs: 1
-        default: 360
+        default: 180
         allowed: {
             min: 3
             max: 16384
