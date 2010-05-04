@@ -139,8 +139,8 @@ class QuadSpherePixelizationTestCase(unittest.TestCase):
         poly = skypix.imageToPolygon(wcs, 1024, 1153)
         pixels = qs.intersect(poly)
         self.assertEqual(len(pixels), 1)
-        self.assertEqual(pixels[0], 730044)
-        self.assertTrue(qs.getGeometry(730044).contains(poly))
+        self.assertEqual(pixels[0], 182720)
+        self.assertTrue(qs.getGeometry(182720).contains(poly))
 
 
 def suite():
