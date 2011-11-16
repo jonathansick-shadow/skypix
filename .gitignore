@@ -1,0 +1,11 @@
+
+# /
+/.sconsign.dblite
+/config.log
+/.sconf_temp
+
+# /doc/
+/doc/htmlDir
+
+# /tests/
+/tests/.tests
