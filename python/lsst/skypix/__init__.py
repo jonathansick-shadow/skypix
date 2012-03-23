@@ -20,6 +20,5 @@
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 from .version import *
-
-from quadsphere import *
+from .quadsphere import *
 
