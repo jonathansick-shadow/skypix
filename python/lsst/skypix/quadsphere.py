@@ -22,40 +22,8 @@
 
 import math
 
-import lsst.pex.config as pexConfig
+import lsst.pex.policy as pexPolicy
 import lsst.geom as geom
-import lsst.afw.geom as afwGeom
-
-
-__all__ = ["QuadSphereConfig",
-           "QuadSpherePixelization",
-           "createQuadSpherePixelization",
-           "imageToPolygon",
-          ]
-
-
-class QuadSphereConfig(pexConfig.Config):
-    """Parameters for a quad-sphere based pixelization of the sky.
-    """
-    resolutionPix = pexConfig.RangeField(
-        dtype=int,
-        doc="""The resolution R of a root pixel in the quad-sphere
-               pixelization scheme - each root pixel is divided into
-               R**2 pixels, yielding a total of 6*R**2 pixels over the
-               unit sphere.""",
-        default=180,
-        min=3,
-        max=16384,
-        inclusiveMax=True)
-
-    paddingArcsec = pexConfig.RangeField(
-        dtype=float,
-        doc="""Number of arcseconds by which to expand each fiducial
-               pixel in the quad sphere pixelization""",
-        default=0.0,
-        min=0.0,
-        max=162000.0,
-        inclusiveMax=True)
 
 
 # Methods for rotating vectors around the x, y, z and -x, -y, -z axes
@@ -784,12 +752,18 @@ class QuadSpherePixelization(object):
                 self._intersect(pixels, p, root, (box[0], box[1], ysplit, box[3]))
 
 
-def createQuadSpherePixelization(cfg=None):
-    cfg = cfg or QuadSphereConfig()
-    cfg.validate()
-    return QuadSpherePixelization(
-        cfg.resolutionPix,
-        (cfg.paddingArcsec * afwGeom.arcseconds).asRadians())
+def createQuadSpherePixelization(policy=None):
+    policyFile = pexPolicy.DefaultPolicyFile(
+        "skypix", "QuadSpherePixelizationDictionary.paf", "policy")
+    defaults = pexPolicy.Policy.createPolicy(
+        policyFile, policyFile.getRepositoryPath())
+    if policy is None:
+        policy = pexPolicy.Policy()
+    policy.mergeDefaults(defaults)
+    # Obtain resolution and padding from policy
+    resolution = policy.get('resolutionPix')
+    padding = math.radians(policy.get('paddingArcsec') / 3600.0)
+    return QuadSpherePixelization(resolution, padding)
 
 def imageToPolygon(wcs, widthPix, heightPix, padRad=0.0):
     """Computes and returns a spherical convex polygon approximation to the

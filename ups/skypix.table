@@ -1,5 +1,5 @@
 setupRequired(utils >= 4.6.0.0)
-setupRequired(pex_config >= 4.9.0.0)
+setupRequired(pex_policy >= 4.6.0.0)
 setupRequired(geom >= 4.6.0.0)
 setupRequired(afw >= 4.6.0.0)
 
