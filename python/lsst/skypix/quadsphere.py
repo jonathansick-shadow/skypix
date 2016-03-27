@@ -1,7 +1,7 @@
-# 
+#
 # LSST Data Management System
 # Copyright 2008, 2009, 2010 LSST Corporation.
-# 
+#
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
 #
@@ -9,14 +9,14 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
-# You should have received a copy of the LSST License Statement and 
-# the GNU General Public License along with this program.  If not, 
+#
+# You should have received a copy of the LSST License Statement and
+# the GNU General Public License along with this program.  If not,
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 
@@ -29,14 +29,24 @@ import lsst.geom as geom
 # Methods for rotating vectors around the x, y, z and -x, -y, -z axes
 def _rotX(v, sin, cos):
     return (v[0], v[1] * cos - v[2] * sin, v[1] * sin + v[2] * cos)
+
+
 def _rotY(v, sin, cos):
     return (v[0] * cos + v[2] * sin, v[1], -v[0] * sin + v[2] * cos)
+
+
 def _rotZ(v, sin, cos):
     return (v[0] * cos - v[1] * sin, v[0] * sin + v[1] * cos, v[2])
+
+
 def _rotNX(v, sin, cos):
     return _rotX(v, -sin, cos)
+
+
 def _rotNY(v, sin, cos):
     return _rotY(v, -sin, cos)
+
+
 def _rotNZ(v, sin, cos):
     return _rotZ(v, -sin, cos)
 
@@ -70,6 +80,7 @@ class QuadSpherePixelization(object):
     of each cube face onto the sphere, but pixel boundaries could be adjusted
     to produce equal area pixels.
     """
+
     def __init__(self, resolution, paddingRad):
         """Creates a new quad-sphere sky pixelisation.
 
@@ -394,7 +405,7 @@ class QuadSpherePixelization(object):
             # Determine angles by which edge planes must be rotated outwards
             sp = math.sin(self.padding)
             theta = map(lambda x: 0.5 * geom.cartesianAngularSep(x[0], x[1]),
-                        ((v[0],v[3]), (v[1],v[0]), (v[2],v[1]), (v[3],v[2])))
+                        ((v[0], v[3]), (v[1], v[0]), (v[2], v[1]), (v[3], v[2])))
             sina = map(lambda x: sp / math.cos(math.radians(x)), theta)
             cosa = map(lambda x: math.sqrt(1.0 - x * x), sina)
             # find plane equations of fiducial pixel boundaries
@@ -439,19 +450,20 @@ class QuadSpherePixelization(object):
             elif root == 0:
                 neighbors = (self.id(2, R - iy - 2, R - 1),
                              self.id(2, R - iy - 1, R - 1),
-                             self.id(2, R - iy,     R - 1))
+                             self.id(2, R - iy, R - 1))
             elif root == 5:
                 neighbors = (self.id(2, iy - 1, 0),
-                             self.id(2, iy,     0),
+                             self.id(2, iy, 0),
                              self.id(2, iy + 1, 0))
             else:
                 r = root - 1
-                if r == 0: r = 4
+                if r == 0:
+                    r = 4
                 neighbors = (self.id(r, R - 1, iy - 1),
-                             self.id(r, R - 1, iy    ),
+                             self.id(r, R - 1, iy),
                              self.id(r, R - 1, iy + 1))
             return neighbors + (self.id(root, 1, iy - 1),
-                                self.id(root, 1, iy    ),
+                                self.id(root, 1, iy),
                                 self.id(root, 1, iy + 1),
                                 self.id(root, 0, iy - 1),
                                 self.id(root, 0, iy + 1))
@@ -463,17 +475,18 @@ class QuadSpherePixelization(object):
                 return self.cornerNeighbors[root][3]
             elif root == 0:
                 neighbors = (self.id(4, iy - 1, R - 1),
-                             self.id(4, iy,     R - 1),
+                             self.id(4, iy, R - 1),
                              self.id(4, iy + 1, R - 1))
             elif root == 5:
                 neighbors = (self.id(4, R - iy - 2, 0),
                              self.id(4, R - iy - 1, 0),
-                             self.id(4, R - iy,     0))
+                             self.id(4, R - iy, 0))
             else:
                 r = root + 1
-                if r == 5: r = 1
+                if r == 5:
+                    r = 1
                 neighbors = (self.id(r, 0, iy - 1),
-                             self.id(r, 0, iy    ),
+                             self.id(r, 0, iy),
                              self.id(r, 0, iy + 1))
             return neighbors + (self.id(root, R - 2, iy - 1),
                                 self.id(root, R - 2, iy),
@@ -484,30 +497,30 @@ class QuadSpherePixelization(object):
             # bottom edge
             if root == 0:
                 neighbors = (self.id(3, ix - 1, R - 1),
-                             self.id(3, ix    , R - 1),
+                             self.id(3, ix, R - 1),
                              self.id(3, ix + 1, R - 1))
             elif root == 1:
                 neighbors = (self.id(5, R - ix - 2, 0),
                              self.id(5, R - ix - 1, 0),
-                             self.id(5, R - ix,     0))
+                             self.id(5, R - ix, 0))
             elif root == 2:
                 neighbors = (self.id(5, 0, ix - 1),
-                             self.id(5, 0, ix    ),
+                             self.id(5, 0, ix),
                              self.id(5, 0, ix + 1))
             elif root == 3:
                 neighbors = (self.id(5, ix - 1, R - 1),
-                             self.id(5, ix    , R - 1),
+                             self.id(5, ix, R - 1),
                              self.id(5, ix + 1, R - 1))
             elif root == 4:
                 neighbors = (self.id(5, R - 1, R - ix - 2),
                              self.id(5, R - 1, R - ix - 1),
-                             self.id(5, R - 1, R - ix    ))
+                             self.id(5, R - 1, R - ix))
             else:
                 neighbors = (self.id(1, R - ix - 2, 0),
                              self.id(1, R - ix - 1, 0),
-                             self.id(1, R - ix,     0))
+                             self.id(1, R - ix, 0))
             return neighbors + (self.id(root, ix - 1, 1),
-                                self.id(root, ix,     1),
+                                self.id(root, ix, 1),
                                 self.id(root, ix + 1, 1),
                                 self.id(root, ix - 1, 0),
                                 self.id(root, ix + 1, 0))
@@ -516,40 +529,40 @@ class QuadSpherePixelization(object):
             if root == 0:
                 neighbors = (self.id(1, R - ix - 2, R - 1),
                              self.id(1, R - ix - 1, R - 1),
-                             self.id(1, R - ix,     R - 1))
+                             self.id(1, R - ix, R - 1))
             elif root == 1:
                 neighbors = (self.id(0, R - ix - 2, R - 1),
                              self.id(0, R - ix - 1, R - 1),
-                             self.id(0, R - ix,     R - 1))
+                             self.id(0, R - ix, R - 1))
             elif root == 2:
                 neighbors = (self.id(0, 0, R - ix - 2),
                              self.id(0, 0, R - ix - 1),
-                             self.id(0, 0, R - ix    ))
+                             self.id(0, 0, R - ix))
             elif root == 3:
                 neighbors = (self.id(0, ix - 1, 0),
-                             self.id(0, ix,     0),
+                             self.id(0, ix, 0),
                              self.id(0, ix + 1, 0))
             elif root == 4:
                 neighbors = (self.id(0, R - 1, ix - 1),
-                             self.id(0, R - 1, ix    ),
+                             self.id(0, R - 1, ix),
                              self.id(0, R - 1, ix + 1))
             else:
                 neighbors = (self.id(3, ix - 1, 0),
-                             self.id(3, ix,     0),
+                             self.id(3, ix, 0),
                              self.id(3, ix + 1, 0))
             return neighbors + (self.id(root, ix - 1, R - 2),
-                                self.id(root, ix,     R - 2),
+                                self.id(root, ix, R - 2),
                                 self.id(root, ix + 1, R - 2),
                                 self.id(root, ix - 1, R - 1),
                                 self.id(root, ix + 1, R - 1))
         # interior pixel
         return (self.id(root, ix - 1, iy - 1),
-                self.id(root, ix    , iy - 1),
+                self.id(root, ix, iy - 1),
                 self.id(root, ix + 1, iy - 1),
                 self.id(root, ix - 1, iy),
                 self.id(root, ix + 1, iy),
                 self.id(root, ix - 1, iy + 1),
-                self.id(root, ix    , iy + 1),
+                self.id(root, ix, iy + 1),
                 self.id(root, ix + 1, iy + 1))
 
     def intersect(self, polygon):
@@ -601,7 +614,7 @@ class QuadSpherePixelization(object):
         tanPhi = math.tan(phi)
         y = tanPhi / math.cos(theta1)
         if y > 1:
-            root = 0 
+            root = 0
             x = -math.sin(theta) / tanPhi
             y = math.cos(theta) / tanPhi
         elif y < -1:
@@ -649,7 +662,7 @@ class QuadSpherePixelization(object):
             i = int(r * r + 3.0 * ring + dy)
         elif dy == ring:
             i = int(r * r + 5.0 * ring + dx)
-        else: # dx == ring
+        else:  # dx == ring
             i = int(r * r + 7.0 * ring - dy)
         if root == 5:
             # south pole - done
@@ -664,7 +677,7 @@ class QuadSpherePixelization(object):
         """
         if not isinstance(pixelId, (int, long)):
             raise TypeError(
-                'Sky-pixel id must be an int or long')        
+                'Sky-pixel id must be an int or long')
         R = self.resolution
         R2 = R ** 2
         if pixelId < 0 or pixelId >= 6 * R2:
@@ -711,14 +724,14 @@ class QuadSpherePixelization(object):
         return (root, int(dx + 0.5 * (R - 1)), int(dy + 0.5 * (R - 1)))
 
     def _fiducialXPlane(self, root, ix):
-        assert isinstance(ix, (int,long)) and ix >= 0 and ix <= self.resolution
+        assert isinstance(ix, (int, long)) and ix >= 0 and ix <= self.resolution
         x = 2.0 * float(ix) / float(self.resolution) - 1.0
         c, b = self.center[root], self.x[root]
         v = (c[0] + x * b[0], c[1] + x * b[1], c[2] + x * b[2])
         return geom.normalize(self.xrot[root](v, 1.0, 0.0))
 
     def _fiducialYPlane(self, root, iy):
-        assert isinstance(iy, (int,long)) and iy >= 0 and iy <= self.resolution
+        assert isinstance(iy, (int, long)) and iy >= 0 and iy <= self.resolution
         y = 2.0 * float(iy) / float(self.resolution) - 1.0
         c, b = self.center[root], self.y[root]
         v = (c[0] + y * b[0], c[1] + y * b[1], c[2] + y * b[2])
@@ -765,6 +778,7 @@ def createQuadSpherePixelization(policy=None):
     padding = math.radians(policy.get('paddingArcsec') / 3600.0)
     return QuadSpherePixelization(resolution, padding)
 
+
 def imageToPolygon(wcs, widthPix, heightPix, padRad=0.0):
     """Computes and returns a spherical convex polygon approximation to the
     region of the unit sphere covered by an image specified with a WCS and
@@ -774,8 +788,8 @@ def imageToPolygon(wcs, widthPix, heightPix, padRad=0.0):
     """
     # Compute image corners
     cd = wcs.getCDMatrix()
-    xpad = math.degrees(padRad) / math.sqrt(cd[0,0]**2 + cd[0,1]**2)
-    ypad = math.degrees(padRad) / math.sqrt(cd[1,0]**2 + cd[1,1]**2)
+    xpad = math.degrees(padRad) / math.sqrt(cd[0, 0]**2 + cd[0, 1]**2)
+    ypad = math.degrees(padRad) / math.sqrt(cd[1, 0]**2 + cd[1, 1]**2)
     xmin, ymin = -0.5 - xpad, -0.5 - ypad
     xmax, ymax = widthPix + xpad - 0.5, heightPix + ypad - 0.5
     # Produce a lsst.afw.coord.coordLib.Coord object for each vertex

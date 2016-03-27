@@ -1,7 +1,7 @@
-# 
+#
 # LSST Data Management System
 # Copyright 2008, 2009, 2010 LSST Corporation.
-# 
+#
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
 #
@@ -9,14 +9,14 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
-# You should have received a copy of the LSST License Statement and 
-# the GNU General Public License along with this program.  If not, 
+#
+# You should have received a copy of the LSST License Statement and
+# the GNU General Public License along with this program.  If not,
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 
@@ -35,8 +35,9 @@ import lsst.skypix as skypix
 class QuadSpherePixelizationTestCase(unittest.TestCase):
     """Tests for quad-sphere based sky pixelization.
     """
+
     def testIdAndCoord(self):
-        for R in (3,4,16,17):
+        for R in (3, 4, 16, 17):
             qs = skypix.QuadSpherePixelization(R, 0.0)
             self.assertEqual(len(qs), 6 * R**2)
             for i in xrange(6 * R**2):
@@ -137,7 +138,7 @@ class QuadSpherePixelizationTestCase(unittest.TestCase):
         """Tests intersection of an image (WCS and dimensions) with a
         quad-sphere pixelization.
         """
-        #metadata taken from CFHT data v695856-e0/v695856-e0-c000-a00.sci_img.fits
+        # metadata taken from CFHT data v695856-e0/v695856-e0-c000-a00.sci_img.fits
         metadata = dafBase.PropertySet()
         metadata.set("SIMPLE", "T")
         metadata.set("BITPIX", -32)
@@ -168,6 +169,7 @@ class QuadSpherePixelizationTestCase(unittest.TestCase):
 def suite():
     utilsTests.init()
     return unittest.TestSuite(unittest.makeSuite(QuadSpherePixelizationTestCase))
+
 
 def run(shouldExit=False):
     utilsTests.run(suite(), shouldExit)
